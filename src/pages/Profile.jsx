@@ -37,7 +37,7 @@ import {
   clearScanHistory,
 } from "../utils/scans";
 
-import "./Profile.css";
+import "./profile.css";
 
 function Profile() {
   useCyberInteractions();
