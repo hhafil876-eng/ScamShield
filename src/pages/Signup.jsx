@@ -1,6 +1,4 @@
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import {
   Link,
@@ -12,25 +10,31 @@ import {
   Shield,
   Lock,
   Mail,
+  User,
   ArrowRight,
   Activity,
 } from "lucide-react";
 
 import {
+  createUser,
   isAuthenticated,
-  loginUser,
 } from "../utils/auth";
 
 import "../App.css";
 
-function Login() {
-  const navigate =
-    useNavigate();
+function Signup() {
+  const navigate = useNavigate();
+
+  const [name, setName] =
+    useState("");
 
   const [email, setEmail] =
     useState("");
 
   const [password, setPassword] =
+    useState("");
+
+  const [confirmPassword, setConfirmPassword] =
     useState("");
 
   const [error, setError] =
@@ -48,20 +52,44 @@ function Login() {
     );
   }
 
-  const handleLogin = (
-    event
-  ) => {
+  const handleSignup = (event) => {
     event.preventDefault();
 
     setError("");
+
+    if (name.trim().length < 2) {
+      setError(
+        "Please enter a valid name."
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      setError(
+        "Password must contain at least 6 characters."
+      );
+      return;
+    }
+
+    if (
+      password !==
+      confirmPassword
+    ) {
+      setError(
+        "Passwords do not match."
+      );
+      return;
+    }
+
     setLoading(true);
 
     setTimeout(() => {
       const result =
-        loginUser(
+        createUser({
+          name,
           email,
-          password
-        );
+          password,
+        });
 
       if (!result.success) {
         setError(
@@ -89,13 +117,10 @@ function Login() {
         <div className="auth-top">
 
           <div className="auth-icon">
-
             <Shield size={31} />
-
           </div>
 
           <div>
-
             <p className="auth-system">
               SCAMSHIELD
             </p>
@@ -107,7 +132,6 @@ function Login() {
               SECURITY NETWORK ONLINE
 
             </span>
-
           </div>
 
         </div>
@@ -115,25 +139,51 @@ function Login() {
         <div className="auth-heading">
 
           <span>
-            AUTHENTICATION PORTAL
+            SECURE REGISTRATION
           </span>
 
           <h1>
-            Welcome back.
+            Create account.
           </h1>
 
           <p>
-            Enter your credentials to access
-            your ScamShield threat intelligence
-            dashboard.
+            Join ScamShield and start
+            protecting yourself from
+            phishing, scams and suspicious
+            messages.
           </p>
 
         </div>
 
         <form
           className="auth-form"
-          onSubmit={handleLogin}
+          onSubmit={handleSignup}
         >
+
+          <label>
+            FULL NAME
+          </label>
+
+          <div className="input-group">
+
+            <User size={18} />
+
+            <input
+              type="text"
+              placeholder="Your name"
+              value={name}
+              required
+              autoComplete="name"
+              onChange={(event) => {
+                setName(
+                  event.target.value
+                );
+
+                setError("");
+              }}
+            />
+
+          </div>
 
           <label>
             EMAIL ADDRESS
@@ -147,8 +197,8 @@ function Login() {
               type="email"
               placeholder="you@example.com"
               value={email}
-              autoComplete="email"
               required
+              autoComplete="email"
               onChange={(event) => {
                 setEmail(
                   event.target.value
@@ -170,12 +220,37 @@ function Login() {
 
             <input
               type="password"
-              placeholder="Enter your password"
+              placeholder="Minimum 6 characters"
               value={password}
-              autoComplete="current-password"
               required
+              autoComplete="new-password"
               onChange={(event) => {
                 setPassword(
+                  event.target.value
+                );
+
+                setError("");
+              }}
+            />
+
+          </div>
+
+          <label>
+            CONFIRM PASSWORD
+          </label>
+
+          <div className="input-group">
+
+            <Lock size={18} />
+
+            <input
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              required
+              autoComplete="new-password"
+              onChange={(event) => {
+                setConfirmPassword(
                   event.target.value
                 );
 
@@ -192,14 +267,14 @@ function Login() {
           )}
 
           <button
-            className="auth-submit magnetic"
             type="submit"
+            className="auth-submit magnetic"
             disabled={loading}
           >
 
             {loading
-              ? "AUTHENTICATING..."
-              : "ACCESS SYSTEM"}
+              ? "CREATING ACCOUNT..."
+              : "CREATE SECURE ACCOUNT"}
 
             {!loading && (
               <ArrowRight size={18} />
@@ -211,10 +286,10 @@ function Login() {
 
         <p className="auth-switch">
 
-          Don't have an account?
+          Already have an account?
 
-          <Link to="/signup">
-            Create secure account
+          <Link to="/login">
+            Sign in
           </Link>
 
         </p>
@@ -225,4 +300,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Signup;
