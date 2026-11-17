@@ -52,24 +52,35 @@ function Signup() {
     );
   }
 
-  const handleSignup = (event) => {
+  const handleSignup = async (
+    event
+  ) => {
     event.preventDefault();
 
     setError("");
 
-    if (name.trim().length < 2) {
+
+    if (
+      name.trim().length < 2
+    ) {
       setError(
         "Please enter a valid name."
       );
+
       return;
     }
 
-    if (password.length < 6) {
+
+    if (
+      password.length < 6
+    ) {
       setError(
         "Password must contain at least 6 characters."
       );
+
       return;
     }
+
 
     if (
       password !==
@@ -78,30 +89,36 @@ function Signup() {
       setError(
         "Passwords do not match."
       );
+
       return;
     }
 
+
     setLoading(true);
 
-    setTimeout(() => {
-      const result =
-        createUser({
-          name,
-          email,
-          password,
-        });
 
-      if (!result.success) {
-        setError(
-          result.message
-        );
+    const result =
+      await createUser({
+        name,
+        email,
+        password,
+      });
 
-        setLoading(false);
-        return;
-      }
 
-      navigate("/");
-    }, 450);
+    if (!result.success) {
+      setError(
+        result.message
+      );
+
+      setLoading(false);
+      return;
+    }
+
+
+    navigate("/", {
+      replace: true,
+    });
+
   };
 
   return (

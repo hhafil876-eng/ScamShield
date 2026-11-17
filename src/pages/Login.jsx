@@ -48,7 +48,7 @@ function Login() {
     );
   }
 
-  const handleLogin = (
+  const handleLogin = async (
     event
   ) => {
     event.preventDefault();
@@ -56,24 +56,25 @@ function Login() {
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const result =
-        loginUser(
-          email,
-          password
-        );
+    const result =
+      await loginUser(
+        email,
+        password
+      );
 
-      if (!result.success) {
-        setError(
-          result.message
-        );
+    if (!result.success) {
+      setError(
+        result.message
+      );
 
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
 
-      navigate("/");
-    }, 450);
+    navigate("/", {
+      replace: true,
+    });
+
   };
 
   return (

@@ -1,178 +1,232 @@
-const USERS_KEY = "scamshieldUsers";
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 const SESSION_KEY = "scamshieldSession";
+const CSRF_KEY = "scamshieldCsrf";
 
-export function getUsers() {
+// Remove credentials retained by the former browser-only account store.
+localStorage.removeItem("scamshieldUsers");
+const previousSession = localStorage.getItem(SESSION_KEY);
+if (previousSession) {
   try {
-    const users = JSON.parse(
-      localStorage.getItem(USERS_KEY) || "[]"
-    );
-
-    return Array.isArray(users)
-      ? users
-      : [];
-  } catch (error) {
-    console.error(
-      "Unable to read users:",
-      error
-    );
-
-    return [];
+    const { id, name, email, joined, loggedInAt } = JSON.parse(previousSession);
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ id, name, email, joined, loggedInAt }));
+  } catch {
+    localStorage.removeItem(SESSION_KEY);
   }
 }
 
-function generateId() {
-  if (
-    typeof crypto !== "undefined" &&
-    crypto.randomUUID
-  ) {
-    return crypto.randomUUID();
-  }
+/* =========================================
+   CSRF TOKEN UTILITY
+========================================= */
 
-  return `${Date.now()}-${Math.random()}`;
+function getCookie(name) {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[2]) : null;
 }
 
-export function createUser({
-  name,
-  email,
-  password,
-}) {
-  const users =
-    getUsers();
-
-  const cleanEmail =
-    email.trim().toLowerCase();
-
-  const exists =
-    users.some(
-      (user) =>
-        user.email.toLowerCase() ===
-        cleanEmail
-    );
-
-  if (exists) {
-    return {
-      success: false,
-      message:
-        "An account with this email already exists.",
-    };
-  }
-
-  const newUser = {
-    id: generateId(),
-    name: name.trim(),
-    email: cleanEmail,
-
-    // Frontend prototype only.
-    // Move password authentication to backend later.
-    password,
-
-    joined:
-      new Date().toISOString(),
-  };
-
-  localStorage.setItem(
-    USERS_KEY,
-    JSON.stringify([
-      ...users,
-      newUser,
-    ])
-  );
-
-  createSession(newUser);
-
-  return {
-    success: true,
-    user: newUser,
-  };
+export function getCsrfToken() {
+  return getCookie("scamshield_csrf") || localStorage.getItem(CSRF_KEY) || "";
 }
 
-export function loginUser(
-  email,
-  password
-) {
-  const cleanEmail =
-    email.trim().toLowerCase();
-
-  const users =
-    getUsers();
-
-  const user =
-    users.find(
-      (item) =>
-        item.email.toLowerCase() ===
-        cleanEmail
-    );
-
-  if (!user) {
-    return {
-      success: false,
-      message:
-        "No ScamShield account found with this email.",
-    };
+export function setCsrfToken(csrfToken) {
+  if (csrfToken) {
+    localStorage.setItem(CSRF_KEY, csrfToken);
+  } else {
+    localStorage.removeItem(CSRF_KEY);
   }
-
-  if (user.password !== password) {
-    return {
-      success: false,
-      message:
-        "Incorrect password. Please try again.",
-    };
-  }
-
-  createSession(user);
-
-  return {
-    success: true,
-    user,
-  };
 }
 
-export function createSession(user) {
+async function requestCsrfToken() {
+  const response = await fetch(`${API_URL}/api/auth/csrf`, { credentials: "include" });
+  if (!response.ok) throw new Error("Unable to initialize secure authentication.");
+  const data = await response.json();
+  setCsrfToken(data.csrfToken);
+  return data.csrfToken;
+}
+
+/* =========================================
+   SESSION MANAGEMENT
+========================================= */
+
+export function createSession(user, csrfToken) {
+  if (csrfToken) {
+    setCsrfToken(csrfToken);
+  }
+
   localStorage.setItem(
     SESSION_KEY,
     JSON.stringify({
-      userId: user.id,
+      id: user.id || user._id,
+      name: user.name,
       email: user.email,
-      loggedInAt:
-        new Date().toISOString(),
+      joined: user.joined || user.createdAt || new Date().toISOString(),
+      loggedInAt: new Date().toISOString(),
     })
   );
 }
 
 export function getSession() {
   try {
-    return JSON.parse(
-      localStorage.getItem(
-        SESSION_KEY
-      )
-    );
+    return JSON.parse(localStorage.getItem(SESSION_KEY));
   } catch {
     return null;
   }
 }
 
 export function getCurrentUser() {
-  const session =
-    getSession();
-
+  const session = getSession();
   if (!session) return null;
 
-  return (
-    getUsers().find(
-      (user) =>
-        user.id === session.userId
-    ) || null
-  );
+  return {
+    id: session.id,
+    name: session.name,
+    email: session.email,
+    joined: session.joined,
+  };
 }
 
 export function isAuthenticated() {
-  return Boolean(
-    getCurrentUser()
-  );
+  return Boolean(getSession());
 }
 
-export function logoutUser() {
-  localStorage.removeItem(
-    SESSION_KEY
-  );
+/* =========================================
+   BACKEND AUTHENTICATION API CALLS
+========================================= */
+
+export async function createUser({ name, email, password }) {
+  try {
+    const csrfToken = await requestCsrfToken();
+    const response = await fetch(`${API_URL}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return {
+        success: false,
+        message: data.message || "Account creation failed.",
+      };
+    }
+
+    createSession(data.user, data.csrfToken);
+
+    return {
+      success: true,
+      user: data.user,
+    };
+  } catch (error) {
+    console.error("Backend auth error:", error);
+    return {
+      success: false,
+      message: "Unable to reach security authentication server. Please verify backend is running.",
+    };
+  }
+}
+
+export async function loginUser(email, password) {
+  try {
+    const csrfToken = await requestCsrfToken();
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return {
+        success: false,
+        message: data.message || "Invalid credentials.",
+      };
+    }
+
+    createSession(data.user, data.csrfToken);
+
+    return {
+      success: true,
+      user: data.user,
+    };
+  } catch (error) {
+    console.error("Backend auth error:", error);
+    return {
+      success: false,
+      message: "Unable to reach security authentication server. Please verify backend is running.",
+    };
+  }
+}
+
+export async function logoutUser() {
+  try {
+    const csrfToken = await requestCsrfToken();
+    const response = await fetch(`${API_URL}/api/auth/logout`, {
+      method: "POST",
+      headers: { "X-CSRF-Token": csrfToken },
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Logout request failed.");
+    localStorage.removeItem(SESSION_KEY);
+    setCsrfToken(null);
+    return { success: true };
+  } catch {
+    return { success: false, message: "Unable to log out. Please try again." };
+  }
+}
+
+export async function deleteCurrentUser() {
+  try {
+    const csrfToken = await requestCsrfToken();
+    const response = await fetch(`${API_URL}/api/auth/account`, {
+      method: "DELETE", credentials: "include", headers: { "X-CSRF-Token": csrfToken },
+    });
+    if (!response.ok) return { success: false, message: "Unable to delete the account. Please try again." };
+    localStorage.removeItem(SESSION_KEY);
+    setCsrfToken(null);
+    return { success: true };
+  } catch {
+    return { success: false, message: "Unable to delete the account. Please try again." };
+  }
+}
+
+export async function fetchCurrentUserProfile() {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/me`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+    if (response.ok && data.success) {
+      createSession(data.user);
+      return data.user;
+    }
+
+    localStorage.removeItem(SESSION_KEY);
+    setCsrfToken(null);
+    return null;
+  } catch (error) {
+    console.error("Profile sync error:", error);
+    localStorage.removeItem(SESSION_KEY);
+    setCsrfToken(null);
+    return null;
+  }
 }

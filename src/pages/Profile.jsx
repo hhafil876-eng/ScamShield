@@ -101,8 +101,12 @@ function Profile() {
       ? "MONITORING"
       : "SECURE";
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    const result = await logoutUser();
+    if (!result.success) {
+      window.alert(result.message);
+      return;
+    }
 
     navigate(
       "/login",
