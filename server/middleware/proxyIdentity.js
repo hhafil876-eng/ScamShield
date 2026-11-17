@@ -8,8 +8,9 @@ module.exports = (req, res, next) => {
   if (expected.length < 32 || supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) {
     return res.status(403).json({ success: false, message: "Use the ScamShield frontend to access authentication." });
   }
-  const address = req.get("x-real-ip");
-  if (!address || !isIP(address)) {
+  const raw = req.get("x-real-ip") || (req.get("x-forwarded-for") ? req.get("x-forwarded-for").split(",")[0].trim() : null) || req.socket?.remoteAddress;
+  const address = raw && isIP(raw) ? raw : null;
+  if (!address) {
     return res.status(400).json({ success: false, message: "A verified client address is required." });
   }
   req.rateLimitAddress = address;
