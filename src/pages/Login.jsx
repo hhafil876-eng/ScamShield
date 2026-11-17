@@ -1,6 +1,4 @@
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import {
   Link,
@@ -9,7 +7,6 @@ import {
 } from "react-router-dom";
 
 import {
-  Shield,
   Lock,
   Mail,
   ArrowRight,
@@ -21,7 +18,11 @@ import {
   loginUser,
 } from "../utils/auth";
 
+import scamShieldLogo
+  from "../assets/scamshield-logo.png";
+
 import "../App.css";
+
 
 function Login() {
   const navigate =
@@ -39,6 +40,7 @@ function Login() {
   const [loading, setLoading] =
     useState(false);
 
+
   if (isAuthenticated()) {
     return (
       <Navigate
@@ -47,6 +49,7 @@ function Login() {
       />
     );
   }
+
 
   const handleLogin = async (
     event
@@ -77,6 +80,7 @@ function Login() {
 
   };
 
+
   return (
     <div className="auth-page">
 
@@ -85,15 +89,20 @@ function Login() {
       <div className="auth-glow glow-one" />
       <div className="auth-glow glow-two" />
 
+
       <div className="auth-card cyber-shine">
 
         <div className="auth-top">
 
-          <div className="auth-icon">
+          <div className="auth-icon logo-auth">
 
-            <Shield size={31} />
+            <img
+              src={scamShieldLogo}
+              alt="ScamShield"
+            />
 
           </div>
+
 
           <div>
 
@@ -113,6 +122,7 @@ function Login() {
 
         </div>
 
+
         <div className="auth-heading">
 
           <span>
@@ -124,12 +134,12 @@ function Login() {
           </h1>
 
           <p>
-            Enter your credentials to access
-            your ScamShield threat intelligence
-            dashboard.
+            Access your ScamShield threat
+            intelligence dashboard.
           </p>
 
         </div>
+
 
         <form
           className="auth-form"
@@ -161,6 +171,7 @@ function Login() {
 
           </div>
 
+
           <label>
             SECURITY PASSWORD
           </label>
@@ -186,11 +197,13 @@ function Login() {
 
           </div>
 
+
           {error && (
             <div className="auth-error">
               {error}
             </div>
           )}
+
 
           <button
             className="auth-submit magnetic"
@@ -209,6 +222,7 @@ function Login() {
           </button>
 
         </form>
+
 
         <p className="auth-switch">
 

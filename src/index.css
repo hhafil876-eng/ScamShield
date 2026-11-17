@@ -5,6 +5,16 @@ body,
   min-height: 100%;
 }
 
+html {
+  background: #020403;
+}
+
 body {
   margin: 0;
+  min-width: 320px;
+  background: #020403;
+}
+
+#root {
+  isolation: isolate;
 }

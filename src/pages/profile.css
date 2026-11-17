@@ -1539,3 +1539,107 @@
       center;
   }
 }
+/* =========================================================
+   DELETE ACCOUNT
+   ========================================================= */
+
+.delete-account-button {
+  min-height: 46px;
+
+  padding:
+    0 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  color:
+    #ff5a6c;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      77,
+      98,
+      0.24
+    );
+
+  border-radius: 10px;
+
+  background:
+    rgba(
+      255,
+      77,
+      98,
+      0.055
+    );
+
+  font-family:
+    "JetBrains Mono",
+    monospace;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  transition:
+    border-color
+      0.25s ease,
+    background
+      0.25s ease,
+    box-shadow
+      0.25s ease,
+    color
+      0.25s ease;
+}
+
+
+.delete-account-button:hover {
+  color:
+    white;
+
+  border-color:
+    #ff4d62;
+
+  background:
+    rgba(
+      255,
+      77,
+      98,
+      0.13
+    );
+
+  box-shadow:
+    0 0 30px
+    rgba(
+      255,
+      77,
+      98,
+      0.15
+    );
+}
+
+
+.delete-account-button svg {
+  flex-shrink: 0;
+}
+
+
+@media (
+  max-width: 600px
+) {
+
+  .delete-account-button {
+    width: 100%;
+  }
+
+}

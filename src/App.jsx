@@ -1,6 +1,4 @@
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import {
   BrowserRouter,
@@ -10,7 +8,6 @@ import {
 } from "react-router-dom";
 
 import {
-  Shield,
   Search,
   AlertTriangle,
   CheckCircle,
@@ -34,6 +31,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 
+import scamShieldLogo from "./assets/scamshield-logo.png";
+
 import useCyberInteractions from "./hooks/useCyberInteractions";
 
 import {
@@ -47,71 +46,44 @@ import {
 
 import "./App.css";
 
-/* =========================================================
-   THREAT ICON
-   ========================================================= */
 
-function ThreatIcon({
-  type,
-}) {
+function ThreatIcon({ type }) {
   const props = {
     size: 18,
   };
 
   switch (type) {
     case "credential":
-      return (
-        <KeyRound {...props} />
-      );
+      return <KeyRound {...props} />;
 
     case "payment":
-      return (
-        <CreditCard {...props} />
-      );
+      return <CreditCard {...props} />;
 
     case "url":
-      return (
-        <LinkIcon {...props} />
-      );
+      return <LinkIcon {...props} />;
 
     case "prize":
-      return (
-        <Gift {...props} />
-      );
+      return <Gift {...props} />;
 
     case "banking":
-      return (
-        <Building2 {...props} />
-      );
+      return <Building2 {...props} />;
 
     case "remote":
-      return (
-        <Smartphone {...props} />
-      );
+      return <Smartphone {...props} />;
 
     case "impersonation":
-      return (
-        <User {...props} />
-      );
+      return <User {...props} />;
 
     default:
-      return (
-        <AlertTriangle
-          {...props}
-        />
-      );
+      return <AlertTriangle {...props} />;
   }
 }
 
-/* =========================================================
-   DASHBOARD
-   ========================================================= */
 
 function Dashboard() {
   useCyberInteractions();
 
-  const user =
-    getCurrentUser();
+  const user = getCurrentUser();
 
   const [message, setMessage] =
     useState("");
@@ -130,10 +102,9 @@ function Dashboard() {
 
   const [history, setHistory] =
     useState(() =>
-      getScanHistory(
-        user?.email
-      )
+      getScanHistory(user?.email)
     );
+
 
   const addThreatFactory = (
     detected,
@@ -156,6 +127,7 @@ function Dashboard() {
       });
     };
   };
+
 
   const analyzeMessage = () => {
     if (!message.trim())
@@ -518,6 +490,7 @@ function Dashboard() {
     }, 900);
   };
 
+
   const riskLabel = () => {
     if (score >= 70)
       return "HIGH RISK";
@@ -527,6 +500,7 @@ function Dashboard() {
 
     return "LOW RISK";
   };
+
 
   const verdict = () => {
     if (score >= 70) {
@@ -539,6 +513,7 @@ function Dashboard() {
 
     return "No major known scam indicators were detected. This does not guarantee that the message is safe, so continue verifying unexpected requests.";
   };
+
 
   const totalScans =
     history.length;
@@ -555,8 +530,10 @@ function Dashboard() {
         scan.riskScore < 40
     ).length;
 
+
   const demoMessage =
     "URGENT: Your bank account has been suspended. Verify your account immediately at https://secure-login-verify.example and enter your OTP.";
+
 
   return (
     <div className="app">
@@ -571,18 +548,17 @@ function Dashboard() {
         >
 
           <div className="logo-icon">
-
-            <Shield size={22} />
-
+            <img
+              src={scamShieldLogo}
+              alt="ScamShield"
+            />
           </div>
 
-          <div>
+          <div className="brand-copy">
 
             <h2>
               SCAM
-              <span>
-                SHIELD
-              </span>
+              <span>SHIELD</span>
             </h2>
 
             <p>
@@ -593,54 +569,47 @@ function Dashboard() {
 
         </Link>
 
+
         <div className="nav-actions">
 
           <div className="system-chip">
-
             <span />
-
             ENGINE ONLINE
-
           </div>
 
           <Link
             to="/profile"
             className="profile-nav magnetic"
           >
-
             <User size={16} />
 
             {user?.name
               ?.split(" ")[0]
-              ?.toUpperCase()}
-
+              ?.toUpperCase() ||
+              "PROFILE"}
           </Link>
 
         </div>
 
       </nav>
 
+
       <main>
 
         <section className="hero">
 
           <div className="hero-tag">
-
             <Sparkles size={14} />
-
             HYBRID THREAT ANALYSIS
-
           </div>
 
           <h1>
-
             Think before
             <br />
 
             <span>
               you click.
             </span>
-
           </h1>
 
           <p>
@@ -653,7 +622,6 @@ function Dashboard() {
 
         </section>
 
-        {/* SCANNER */}
 
         <section className="scanner-card tilt-card cyber-shine">
 
@@ -677,53 +645,51 @@ function Dashboard() {
             </div>
 
             <div className="scanner-icon">
-
               <ScanLine size={24} />
-
             </div>
 
           </div>
+
 
           <div className="scanner-input-shell">
 
             <textarea
               placeholder="Paste suspicious SMS, WhatsApp message, email or URL here..."
               value={message}
-              onChange={(event) =>
+              onChange={(event) => {
                 setMessage(
                   event.target.value
-                )
-              }
+                );
+
+                setAnalyzed(false);
+              }}
             />
 
-            {(scanning ||
-              message.trim()) && (
-              <div
-                className={`scanner-beam ${
-                  scanning
-                    ? "beam-active"
-                    : ""
-                }`}
-              />
+            {scanning && (
+              <div className="scanner-beam beam-active" />
             )}
 
           </div>
+
 
           <div className="scanner-footer">
 
             <button
               type="button"
               className="example-button magnetic"
-              onClick={() =>
+              onClick={() => {
                 setMessage(
                   demoMessage
-                )
-              }
+                );
+
+                setAnalyzed(false);
+              }}
             >
               LOAD DEMO MESSAGE
             </button>
 
             <button
+              type="button"
               className="analyze-button magnetic"
               onClick={
                 analyzeMessage
@@ -746,7 +712,6 @@ function Dashboard() {
               ) : (
                 <>
                   <Zap size={18} />
-
                   ANALYZE MESSAGE
                 </>
               )}
@@ -757,9 +722,9 @@ function Dashboard() {
 
         </section>
 
-        {/* RESULT */}
 
         {analyzed && (
+
           <section
             className={`result tilt-card ${
               score >= 70
@@ -769,6 +734,7 @@ function Dashboard() {
           >
 
             <div className="result-grid">
+
 
               <div className="threat-meter-card">
 
@@ -781,8 +747,8 @@ function Dashboard() {
                     score >= 70
                       ? "danger-meter"
                       : score >= 40
-                      ? "warning-meter"
-                      : "safe-meter"
+                        ? "warning-meter"
+                        : "safe-meter"
                   }`}
                   style={{
                     "--score":
@@ -804,13 +770,14 @@ function Dashboard() {
 
                 </div>
 
+
                 <div
                   className={`risk-pill ${
                     score >= 70
                       ? "high"
                       : score >= 40
-                      ? "medium"
-                      : "low"
+                        ? "medium"
+                        : "low"
                   }`}
                 >
 
@@ -829,6 +796,7 @@ function Dashboard() {
                 </div>
 
               </div>
+
 
               <div className="analysis-panel">
 
@@ -850,8 +818,8 @@ function Dashboard() {
 
                 </div>
 
-                {threats.length ===
-                0 ? (
+
+                {threats.length === 0 ? (
 
                   <div className="clean-state">
 
@@ -862,14 +830,12 @@ function Dashboard() {
                     <div>
 
                       <strong>
-                        No major threats
-                        detected
+                        No major threats detected
                       </strong>
 
                       <p>
-                        No high-risk
-                        patterns were
-                        identified.
+                        No high-risk patterns
+                        were identified.
                       </p>
 
                     </div>
@@ -881,10 +847,7 @@ function Dashboard() {
                   <div className="detections">
 
                     {threats.map(
-                      (
-                        threat,
-                        index
-                      ) => (
+                      (threat, index) => (
 
                         <div
                           className="threat-item"
@@ -901,7 +864,7 @@ function Dashboard() {
 
                           </div>
 
-                          <div>
+                          <div className="threat-info">
 
                             <strong>
                               {threat.title}
@@ -914,9 +877,7 @@ function Dashboard() {
                           </div>
 
                           <span className="threat-weight">
-
                             +{threat.weight}
-
                           </span>
 
                         </div>
@@ -932,6 +893,7 @@ function Dashboard() {
 
             </div>
 
+
             <div className="verdict">
 
               <div className="verdict-header">
@@ -939,7 +901,6 @@ function Dashboard() {
                 <Activity size={18} />
 
                 <div>
-
                   <span>
                     EXPLAINABLE VERDICT
                   </span>
@@ -947,7 +908,6 @@ function Dashboard() {
                   <h3>
                     ScamShield analysis
                   </h3>
-
                 </div>
 
               </div>
@@ -959,22 +919,19 @@ function Dashboard() {
             </div>
 
           </section>
+
         )}
 
-        {/* STATS */}
 
         <section className="stats">
 
           <div className="stat-card tilt-card cyber-shine">
 
             <div className="stat-icon">
-
-              <Shield />
-
+              <ScanLine />
             </div>
 
             <div>
-
               <p>
                 MESSAGES SCANNED
               </p>
@@ -982,21 +939,18 @@ function Dashboard() {
               <h2>
                 {totalScans}
               </h2>
-
             </div>
 
           </div>
 
+
           <div className="stat-card danger-stat tilt-card cyber-shine">
 
             <div className="stat-icon">
-
               <AlertTriangle />
-
             </div>
 
             <div>
-
               <p>
                 THREATS DETECTED
               </p>
@@ -1004,21 +958,18 @@ function Dashboard() {
               <h2>
                 {threatsDetected}
               </h2>
-
             </div>
 
           </div>
 
+
           <div className="stat-card tilt-card cyber-shine">
 
             <div className="stat-icon">
-
               <CheckCircle />
-
             </div>
 
             <div>
-
               <p>
                 SAFE MESSAGES
               </p>
@@ -1026,7 +977,6 @@ function Dashboard() {
               <h2>
                 {safeMessages}
               </h2>
-
             </div>
 
           </div>
@@ -1035,9 +985,13 @@ function Dashboard() {
 
       </main>
 
+
       <footer className="app-footer">
 
-        <Shield size={14} />
+        <img
+          src={scamShieldLogo}
+          alt=""
+        />
 
         SCAMSHIELD SECURITY ENGINE
 
@@ -1051,9 +1005,6 @@ function Dashboard() {
   );
 }
 
-/* =========================================================
-   ROUTER
-   ========================================================= */
 
 function App() {
   return (

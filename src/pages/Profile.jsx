@@ -23,13 +23,16 @@ import {
   User,
 } from "lucide-react";
 
-import CyberWorld from "../components/CyberWorld";
+import CyberWorld
+  from "../components/CyberWorld";
 
-import useCyberInteractions from "../hooks/useCyberInteractions";
+import useCyberInteractions
+  from "../hooks/useCyberInteractions";
 
 import {
   getCurrentUser,
   logoutUser,
+  deleteCurrentUser,
 } from "../utils/auth";
 
 import {
@@ -38,6 +41,7 @@ import {
 } from "../utils/scans";
 
 import "./profile.css";
+
 
 function Profile() {
   useCyberInteractions();
@@ -48,15 +52,25 @@ function Profile() {
   const user =
     getCurrentUser();
 
-  const [history, setHistory] =
-    useState(() =>
+
+  const [
+    history,
+    setHistory,
+  ] = useState(
+    () =>
       getScanHistory(
         user?.email
       )
-    );
+  );
+
+
+  /* =========================================================
+     STATISTICS
+     ========================================================= */
 
   const scanned =
     history.length;
+
 
   const threats =
     history.filter(
@@ -64,20 +78,24 @@ function Profile() {
         scan.riskScore >= 40
     ).length;
 
+
   const safe =
     history.filter(
       (scan) =>
         scan.riskScore < 40
     ).length;
 
+
   const threatRate =
     scanned > 0
       ? Math.round(
-          (threats /
-            scanned) *
-            100
+          (
+            threats /
+            scanned
+          ) * 100
         )
       : 0;
+
 
   const averageRisk =
     scanned > 0
@@ -90,16 +108,23 @@ function Profile() {
               total +
               scan.riskScore,
             0
-          ) / scanned
+          ) /
+          scanned
         )
       : 0;
+
 
   const securityLevel =
     threatRate >= 70
       ? "HIGH ALERT"
       : threatRate >= 40
-      ? "MONITORING"
-      : "SECURE";
+        ? "MONITORING"
+        : "SECURE";
+
+
+  /* =========================================================
+     LOGOUT
+     ========================================================= */
 
   const handleLogout = async () => {
     const result = await logoutUser();
@@ -116,82 +141,204 @@ function Profile() {
     );
   };
 
+
+  /* =========================================================
+     DELETE ACCOUNT
+     ========================================================= */
+
+  const handleDeleteAccount =
+    async () => {
+
+      const confirmation =
+        window.prompt(
+          `WARNING!
+
+This will permanently delete:
+
+• Your ScamShield account
+• Your scan history in this browser
+• Your current login session
+
+Type DELETE to confirm.`
+        );
+
+
+      if (
+        confirmation !==
+        "DELETE"
+      ) {
+        return;
+      }
+
+
+      /*
+        Remove user account.
+      */
+
+      const result =
+        await deleteCurrentUser();
+
+
+      if (!result.success) {
+        window.alert(
+          result.message
+        );
+
+        return;
+      }
+
+
+      window.alert(
+        "Your ScamShield account has been deleted."
+      );
+      if (user?.email) clearScanHistory(user.email);
+
+
+      navigate(
+        "/signup",
+        {
+          replace: true,
+        }
+      );
+    };
+
+
+  /* =========================================================
+     CLEAR HISTORY
+     ========================================================= */
+
   const handleClear = () => {
     const confirmed =
       window.confirm(
         "Clear all ScamShield scan history?"
       );
 
-    if (!confirmed)
+
+    if (!confirmed) {
       return;
+    }
+
 
     clearScanHistory(
       user?.email
     );
 
+
     setHistory([]);
   };
 
+
+  /* =========================================================
+     FORMAT DATE
+     ========================================================= */
+
   const formatDate = (
     timestamp
-  ) =>
-    new Date(
+  ) => {
+
+    if (!timestamp) {
+      return "Unknown";
+    }
+
+
+    return new Date(
       timestamp
     ).toLocaleString(
       "en-IN",
       {
         dateStyle:
           "medium",
+
         timeStyle:
           "short",
       }
     );
+  };
+
 
   const formatJoined = (
     timestamp
   ) => {
-    if (!timestamp)
+
+    if (!timestamp) {
       return "Unknown";
+    }
+
 
     return new Date(
       timestamp
     ).toLocaleDateString(
       "en-IN",
       {
-        month: "short",
-        year: "numeric",
+        month:
+          "short",
+
+        year:
+          "numeric",
       }
     );
   };
 
+
+  /* =========================================================
+     RISK STYLES
+     ========================================================= */
+
   const riskClass = (
     score
   ) => {
-    if (score >= 70)
-      return "high";
 
-    if (score >= 40)
+    if (
+      score >= 70
+    ) {
+      return "high";
+    }
+
+
+    if (
+      score >= 40
+    ) {
       return "medium";
+    }
+
 
     return "low";
   };
 
+
   const riskLabel = (
     score
   ) => {
-    if (score >= 70)
-      return "HIGH RISK";
 
-    if (score >= 40)
+    if (
+      score >= 70
+    ) {
+      return "HIGH RISK";
+    }
+
+
+    if (
+      score >= 40
+    ) {
       return "SUSPICIOUS";
+    }
+
 
     return "LOW RISK";
   };
+
+
+  /* =========================================================
+     PAGE
+     ========================================================= */
 
   return (
     <div className="profile-page">
 
       <CyberWorld />
+
+
+      {/* NAVBAR */}
 
       <nav className="profile-navbar">
 
@@ -200,25 +347,32 @@ function Profile() {
           className="back-button magnetic"
         >
 
-          <ArrowLeft size={16} />
+          <ArrowLeft
+            size={16}
+          />
 
           DASHBOARD
 
         </Link>
+
 
         <Link
           to="/"
           className="profile-brand"
         >
 
-          <Shield size={20} />
+          <Shield
+            size={20}
+          />
 
           SCAM
+
           <span>
             SHIELD
           </span>
 
         </Link>
+
 
         <div className="online-status">
 
@@ -230,15 +384,22 @@ function Profile() {
 
       </nav>
 
+
       <main className="profile-container">
+
+
+        {/* PROFILE HEADER */}
 
         <section className="profile-header tilt-card cyber-shine">
 
           <div className="avatar">
 
-            <User size={36} />
+            <User
+              size={36}
+            />
 
           </div>
+
 
           <div className="profile-identity">
 
@@ -246,25 +407,33 @@ function Profile() {
               SECURITY OPERATOR
             </p>
 
+
             <h1>
               {user?.name}
             </h1>
+
 
             <div className="user-meta">
 
               <span>
 
-                <Mail size={13} />
+                <Mail
+                  size={13}
+                />
 
                 {user?.email}
 
               </span>
 
+
               <span>
 
-                <CalendarDays size={13} />
+                <CalendarDays
+                  size={13}
+                />
 
                 Joined{" "}
+
                 {formatJoined(
                   user?.joined
                 )}
@@ -275,9 +444,13 @@ function Profile() {
 
           </div>
 
+
           <div className="protection-status">
 
-            <CheckCircle size={19} />
+            <CheckCircle
+              size={19}
+            />
+
 
             <div>
 
@@ -295,13 +468,19 @@ function Profile() {
 
         </section>
 
+
+        {/* SECURITY CARD */}
+
         <section className="security-card tilt-card cyber-shine">
 
           <div className="security-core">
 
-            <Lock size={27} />
+            <Lock
+              size={27}
+            />
 
           </div>
+
 
           <div className="security-info">
 
@@ -309,9 +488,11 @@ function Profile() {
               SECURITY POSTURE
             </p>
 
+
             <h2>
               {securityLevel}
             </h2>
+
 
             <div className="security-bar">
 
@@ -328,48 +509,72 @@ function Profile() {
 
             </div>
 
+
             <span>
+
               Calculated from your
               recent threat analysis.
+
             </span>
 
           </div>
 
         </section>
 
+
+        {/* PROFILE STATS */}
+
         <section className="profile-stats">
 
           <ProfileStat
-            icon={<ScanLine />}
+            icon={
+              <ScanLine />
+            }
             title="MESSAGES SCANNED"
-            value={scanned}
+            value={
+              scanned
+            }
           />
+
 
           <ProfileStat
             icon={
               <AlertTriangle />
             }
             title="THREATS DETECTED"
-            value={threats}
+            value={
+              threats
+            }
             type="danger"
           />
+
 
           <ProfileStat
             icon={
               <CheckCircle />
             }
             title="SAFE MESSAGES"
-            value={safe}
+            value={
+              safe
+            }
             type="safe"
           />
 
+
           <ProfileStat
-            icon={<Activity />}
+            icon={
+              <Activity />
+            }
             title="AVERAGE RISK"
-            value={`${averageRisk}%`}
+            value={
+              `${averageRisk}%`
+            }
           />
 
         </section>
+
+
+        {/* SCAN HISTORY */}
 
         <section className="history-panel tilt-card">
 
@@ -377,7 +582,10 @@ function Profile() {
 
             <div className="heading-left">
 
-              <Clock size={18} />
+              <Clock
+                size={18}
+              />
+
 
               <div>
 
@@ -393,6 +601,7 @@ function Profile() {
 
             </div>
 
+
             {history.length >
               0 && (
 
@@ -403,7 +612,9 @@ function Profile() {
                 }
               >
 
-                <Trash2 size={14} />
+                <Trash2
+                  size={14}
+                />
 
                 CLEAR
 
@@ -413,29 +624,39 @@ function Profile() {
 
           </div>
 
+
           {history.length ===
           0 ? (
 
             <div className="empty-history">
 
-              <ScanLine size={40} />
+              <ScanLine
+                size={40}
+              />
+
 
               <h3>
                 NO SCANS YET
               </h3>
 
+
               <p>
+
                 Analyze your first
                 suspicious message to
                 generate threat data.
+
               </p>
+
 
               <Link
                 to="/"
                 className="scan-button magnetic"
               >
 
-                <ScanLine size={17} />
+                <ScanLine
+                  size={17}
+                />
 
                 START SCANNING
 
@@ -452,7 +673,9 @@ function Profile() {
 
                   <div
                     className="history-item"
-                    key={scan.id}
+                    key={
+                      scan.id
+                    }
                   >
 
                     <div
@@ -466,6 +689,7 @@ function Profile() {
                       }
 
                     </div>
+
 
                     <div className="history-info">
 
@@ -485,6 +709,7 @@ function Profile() {
 
                         </strong>
 
+
                         <span>
 
                           {formatDate(
@@ -495,6 +720,7 @@ function Profile() {
 
                       </div>
 
+
                       <p className="history-message">
 
                         {
@@ -502,6 +728,7 @@ function Profile() {
                         }
 
                       </p>
+
 
                       {scan.threats
                         ?.length >
@@ -522,7 +749,7 @@ function Profile() {
 
                                 <span
                                   key={
-                                    index
+                                    `${threat.title}-${index}`
                                   }
                                 >
 
@@ -564,13 +791,19 @@ function Profile() {
 
         </section>
 
+
+        {/* SECURITY SYSTEMS */}
+
         <section className="system-panel tilt-card cyber-shine">
 
           <div className="panel-heading">
 
             <div className="heading-left">
 
-              <Activity size={18} />
+              <Activity
+                size={18}
+              />
+
 
               <div>
 
@@ -588,6 +821,7 @@ function Profile() {
 
           </div>
 
+
           <div className="system-grid">
 
             <SystemStatus
@@ -595,15 +829,18 @@ function Profile() {
               description="Social engineering analysis"
             />
 
+
             <SystemStatus
               title="URL ANALYSIS"
               description="Suspicious link inspection"
             />
 
+
             <SystemStatus
               title="CREDENTIAL GUARD"
               description="OTP and password detection"
             />
+
 
             <SystemStatus
               title="PAYMENT MONITOR"
@@ -614,6 +851,9 @@ function Profile() {
 
         </section>
 
+
+        {/* ACCOUNT ACTIONS */}
+
         <section className="profile-actions">
 
           <Link
@@ -621,22 +861,45 @@ function Profile() {
             className="scan-button magnetic"
           >
 
-            <ScanLine size={17} />
+            <ScanLine
+              size={17}
+            />
 
             SCAN NEW MESSAGE
 
           </Link>
 
+
           <button
+            type="button"
             className="logout-button magnetic"
             onClick={
               handleLogout
             }
           >
 
-            <LogOut size={17} />
+            <LogOut
+              size={17}
+            />
 
             LOG OUT
+
+          </button>
+
+
+          <button
+            type="button"
+            className="delete-account-button magnetic"
+            onClick={
+              handleDeleteAccount
+            }
+          >
+
+            <Trash2
+              size={17}
+            />
+
+            DELETE ACCOUNT
 
           </button>
 
@@ -648,24 +911,34 @@ function Profile() {
   );
 }
 
+
+/* =========================================================
+   PROFILE STAT
+   ========================================================= */
+
 function ProfileStat({
   icon,
   title,
   value,
   type = "",
 }) {
+
   return (
     <div
-      className={`profile-stat ${type} tilt-card cyber-shine`}
+      className={
+        `profile-stat ${type} tilt-card cyber-shine`
+      }
     >
 
       <div className="profile-stat-icon">
         {icon}
       </div>
 
+
       <p>
         {title}
       </p>
+
 
       <h2>
         {value}
@@ -675,18 +948,27 @@ function ProfileStat({
   );
 }
 
+
+/* =========================================================
+   SYSTEM STATUS
+   ========================================================= */
+
 function SystemStatus({
   title,
   description,
 }) {
+
   return (
     <div className="system-status">
 
       <div className="system-icon">
 
-        <Shield size={18} />
+        <Shield
+          size={18}
+        />
 
       </div>
+
 
       <div>
 
@@ -694,11 +976,13 @@ function SystemStatus({
           {title}
         </strong>
 
+
         <p>
           {description}
         </p>
 
       </div>
+
 
       <div className="system-online">
 
@@ -711,5 +995,6 @@ function SystemStatus({
     </div>
   );
 }
+
 
 export default Profile;

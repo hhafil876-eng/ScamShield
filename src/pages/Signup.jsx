@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 
 import {
-  Shield,
   Lock,
   Mail,
   User,
@@ -20,10 +19,15 @@ import {
   isAuthenticated,
 } from "../utils/auth";
 
+import scamShieldLogo
+  from "../assets/scamshield-logo.png";
+
 import "../App.css";
 
+
 function Signup() {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
   const [name, setName] =
     useState("");
@@ -34,14 +38,17 @@ function Signup() {
   const [password, setPassword] =
     useState("");
 
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState("");
 
   const [error, setError] =
     useState("");
 
   const [loading, setLoading] =
     useState(false);
+
 
   if (isAuthenticated()) {
     return (
@@ -51,6 +58,7 @@ function Signup() {
       />
     );
   }
+
 
   const handleSignup = async (
     event
@@ -121,6 +129,7 @@ function Signup() {
 
   };
 
+
   return (
     <div className="auth-page">
 
@@ -129,15 +138,23 @@ function Signup() {
       <div className="auth-glow glow-one" />
       <div className="auth-glow glow-two" />
 
+
       <div className="auth-card cyber-shine">
 
         <div className="auth-top">
 
-          <div className="auth-icon">
-            <Shield size={31} />
+          <div className="auth-icon logo-auth">
+
+            <img
+              src={scamShieldLogo}
+              alt="ScamShield"
+            />
+
           </div>
 
+
           <div>
+
             <p className="auth-system">
               SCAMSHIELD
             </p>
@@ -149,9 +166,11 @@ function Signup() {
               SECURITY NETWORK ONLINE
 
             </span>
+
           </div>
 
         </div>
+
 
         <div className="auth-heading">
 
@@ -164,13 +183,13 @@ function Signup() {
           </h1>
 
           <p>
-            Join ScamShield and start
-            protecting yourself from
-            phishing, scams and suspicious
+            Create your ScamShield account
+            and start analyzing suspicious
             messages.
           </p>
 
         </div>
+
 
         <form
           className="auth-form"
@@ -202,6 +221,7 @@ function Signup() {
 
           </div>
 
+
           <label>
             EMAIL ADDRESS
           </label>
@@ -226,6 +246,7 @@ function Signup() {
             />
 
           </div>
+
 
           <label>
             SECURITY PASSWORD
@@ -252,6 +273,7 @@ function Signup() {
 
           </div>
 
+
           <label>
             CONFIRM PASSWORD
           </label>
@@ -277,11 +299,13 @@ function Signup() {
 
           </div>
 
+
           {error && (
             <div className="auth-error">
               {error}
             </div>
           )}
+
 
           <button
             type="submit"
@@ -300,6 +324,7 @@ function Signup() {
           </button>
 
         </form>
+
 
         <p className="auth-switch">
 
