@@ -1,3 +1,4 @@
+import { analyzeContent } from "./utils/scanner";
 import { useState } from "react";
 
 import {
@@ -106,359 +107,30 @@ function Dashboard() {
     );
 
 
-  const addThreatFactory = (
-    detected,
-    riskRef
-  ) => {
-    return ({
-      type,
-      title,
-      detail,
-      weight,
-    }) => {
-      riskRef.value +=
-        weight;
-
-      detected.push({
-        type,
-        title,
-        detail,
-        weight,
-      });
-    };
-  };
-
-
   const analyzeMessage = () => {
-    if (!message.trim())
-      return;
+    if (!message.trim()) return;
 
     setScanning(true);
     setAnalyzed(false);
 
     setTimeout(() => {
-      const text =
-        message.toLowerCase();
-
-      const detected = [];
-
-      const riskRef = {
-        value: 0,
-      };
-
-      const addThreat =
-        addThreatFactory(
-          detected,
-          riskRef
-        );
-
-      /* =====================================
-         URGENCY
-         ===================================== */
-
-      const urgencyWords = [
-        "urgent",
-        "immediately",
-        "act now",
-        "final warning",
-        "expires today",
-        "limited time",
-        "within 24 hours",
-        "don't wait",
-        "respond immediately",
-        "account will be closed",
-      ];
-
-      const urgency =
-        urgencyWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (urgency) {
-        addThreat({
-          type: "urgency",
-          title:
-            "Urgency & pressure",
-          detail:
-            `Manipulation phrase "${urgency}" detected.`,
-          weight: 18,
-        });
-      }
-
-      /* =====================================
-         CREDENTIALS
-         ===================================== */
-
-      const credentialWords = [
-        "otp",
-        "password",
-        "pin",
-        "passcode",
-        "verification code",
-        "security code",
-        "login details",
-        "cvv",
-      ];
-
-      const credential =
-        credentialWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (credential) {
-        addThreat({
-          type: "credential",
-          title:
-            "Credential request",
-          detail:
-            `Sensitive information "${credential}" is being requested.`,
-          weight: 25,
-        });
-      }
-
-      /* =====================================
-         PAYMENT
-         ===================================== */
-
-      const paymentWords = [
-        "send money",
-        "pay now",
-        "bank transfer",
-        "upi",
-        "phonepe",
-        "paytm",
-        "gpay",
-        "processing fee",
-        "registration fee",
-        "payment required",
-      ];
-
-      const payment =
-        paymentWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (payment) {
-        addThreat({
-          type: "payment",
-          title:
-            "Financial request",
-          detail:
-            `Payment-related phrase "${payment}" detected.`,
-          weight: 20,
-        });
-      }
-
-      /* =====================================
-         PRIZE
-         ===================================== */
-
-      const prizeWords = [
-        "you won",
-        "winner",
-        "lottery",
-        "cash prize",
-        "claim your prize",
-        "free gift",
-        "congratulations",
-        "reward waiting",
-      ];
-
-      const prize =
-        prizeWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (prize) {
-        addThreat({
-          type: "prize",
-          title:
-            "Prize / reward pattern",
-          detail:
-            `Unexpected reward phrase "${prize}" detected.`,
-          weight: 20,
-        });
-      }
-
-      /* =====================================
-         BANKING
-         ===================================== */
-
-      const bankingWords = [
-        "account suspended",
-        "account blocked",
-        "kyc expired",
-        "update kyc",
-        "verify your account",
-        "debit card blocked",
-        "bank account blocked",
-      ];
-
-      const banking =
-        bankingWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (banking) {
-        addThreat({
-          type: "banking",
-          title:
-            "Financial impersonation",
-          detail:
-            `"${banking}" resembles banking phishing language.`,
-          weight: 18,
-        });
-      }
-
-      /* =====================================
-         IMPERSONATION
-         ===================================== */
-
-      const authorityWords = [
-        "police department",
-        "income tax department",
-        "customs officer",
-        "bank manager",
-        "government official",
-        "courier department",
-        "customer support agent",
-      ];
-
-      const authority =
-        authorityWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (authority) {
-        addThreat({
-          type:
-            "impersonation",
-          title:
-            "Authority impersonation",
-          detail:
-            `Possible impersonation of "${authority}".`,
-          weight: 15,
-        });
-      }
-
-      /* =====================================
-         REMOTE CONTROL
-         ===================================== */
-
-      const remoteWords = [
-        "anydesk",
-        "teamviewer",
-        "remote access",
-        "screen share",
-        "install this app",
-      ];
-
-      const remote =
-        remoteWords.find(
-          (word) =>
-            text.includes(word)
-        );
-
-      if (remote) {
-        addThreat({
-          type: "remote",
-          title:
-            "Remote access request",
-          detail:
-            `"${remote}" may allow another person to control the device.`,
-          weight: 30,
-        });
-      }
-
-      /* =====================================
-         URL ANALYSIS
-         ===================================== */
-
-      const urls =
-        message.match(
-          /https?:\/\/[^\s]+|www\.[^\s]+/gi
-        ) || [];
-
-      if (urls.length) {
-        const shorteners = [
-          "bit.ly",
-          "tinyurl.com",
-          "t.co",
-          "goo.gl",
-          "cutt.ly",
-          "shorturl.at",
-        ];
-
-        const suspiciousUrlWords = [
-          "verify",
-          "secure-login",
-          "update-account",
-          "claim",
-          "reward",
-          "bank-login",
-          "wallet",
-          "kyc",
-        ];
-
-        const suspiciousUrl =
-          urls.find(
-            (url) => {
-              const lower =
-                url.toLowerCase();
-
-              return (
-                shorteners.some(
-                  (domain) =>
-                    lower.includes(
-                      domain
-                    )
-                ) ||
-                suspiciousUrlWords.some(
-                  (word) =>
-                    lower.includes(
-                      word
-                    )
-                ) ||
-                /https?:\/\/\d{1,3}(\.\d{1,3}){3}/i.test(
-                  lower
-                )
-              );
-            }
-          );
-
-        if (suspiciousUrl) {
-          addThreat({
-            type: "url",
-            title:
-              "Suspicious link",
-            detail:
-              `Potential phishing link detected: ${suspiciousUrl}`,
-            weight: 25,
-          });
-        }
-      }
-
-      const finalScore =
-        Math.min(
-          riskRef.value,
-          100
-        );
+      const result = analyzeContent(message);
+      const finalScore = result.riskScore;
+      const detected = result.threats;
 
       setScore(finalScore);
       setThreats(detected);
       setAnalyzed(true);
       setScanning(false);
 
+
       const scan = {
         id:
-          crypto.randomUUID?.() ||
-          Date.now(),
+          typeof crypto !==
+            "undefined" &&
+          crypto.randomUUID
+            ? crypto.randomUUID()
+            : Date.now(),
 
         message:
           message.trim(),
@@ -470,8 +142,8 @@ function Dashboard() {
           finalScore >= 70
             ? "HIGH RISK"
             : finalScore >= 40
-            ? "SUSPICIOUS"
-            : "LOW RISK",
+              ? "SUSPICIOUS"
+              : "LOW RISK",
 
         threats:
           detected,
@@ -480,14 +152,18 @@ function Dashboard() {
           new Date().toISOString(),
       };
 
-      const updated =
-        saveScan(
-          user.email,
-          scan
-        );
 
-      setHistory(updated);
-    }, 900);
+      if (user?.email) {
+        const updated =
+          saveScan(
+            user.email,
+            scan
+          );
+
+        setHistory(updated);
+      }
+
+    }, 850);
   };
 
 
@@ -504,14 +180,24 @@ function Dashboard() {
 
   const verdict = () => {
     if (score >= 70) {
-      return "Multiple high-risk phishing and social-engineering indicators were detected. Do not click links, send money, disclose credentials or respond until the sender has been independently verified.";
+      return (
+        "Multiple high-risk phishing or social-engineering indicators " +
+        "were detected. Do not click links, send money or disclose " +
+        "credentials until the sender has been independently verified."
+      );
     }
 
     if (score >= 40) {
-      return "Suspicious characteristics were detected. Verify the sender through an official channel before taking any requested action.";
+      return (
+        "Suspicious characteristics were detected. Verify the sender " +
+        "through an official channel before taking action."
+      );
     }
 
-    return "No major known scam indicators were detected. This does not guarantee that the message is safe, so continue verifying unexpected requests.";
+    return (
+      "No major known scam indicators were detected. " +
+      "This does not guarantee that the message is safe."
+    );
   };
 
 
