@@ -27,7 +27,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['*.config.js', 'vercel.js', 'tests/**/*.js'],
+    files: ['*.config.js', 'vercel.mjs', 'tests/**/*.js'],
     extends: [js.configs.recommended],
     languageOptions: {
       globals: globals.node,

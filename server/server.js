@@ -2,5 +2,5 @@
 module.exports = require("./index");
 if (require.main === module && process.env.NODE_ENV !== "test") {
   const port = process.env.PORT || 5000;
-  module.exports.listen(port, () => console.log(`ScamShield API running on port ${port}`));
+  const server = module.exports.listen(port, "0.0.0.0", () => console.log(`ScamShield API running on port ${server.address().port}`));
 }

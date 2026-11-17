@@ -8,12 +8,11 @@ and prepares a same-origin Vercel API proxy to the Render backend. Existing bran
 and scanner improvements are retained in separate changesets. Scanner regressions
 cover URL parsing, scoring and partial-word false positives.
 
-Local validation passed 13 backend security tests and 5 scanner/hosting tests,
+Local validation passed 17 backend security/startup tests and 7 scanner/hosting tests,
 lint, production build and both dependency audits. Local browser authentication,
-scanner history and responsive checks passed. The live Atlas integration failed
-during TLS negotiation before an account was created.
+scanner history and responsive checks passed. The completed live Atlas verification passed 27 checks and removed its dedicated account.
 
-Keep this proposal in draft until the Atlas password is rotated, Atlas access is
-restored, the existing Vercel project is confirmed and the assigned Render origin
-and matching proxy secrets are configured. Public HTTPS authentication verification
+The existing Vercel project and OWNER access are verified. Keep this proposal in
+draft until the approved Render service is configured with its assigned origin
+and matching private proxy secrets. Public HTTPS authentication verification
 is pending approved deployment. Full evidence and release settings are in RELEASE.md.

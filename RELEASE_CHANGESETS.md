@@ -36,7 +36,7 @@ Include these complete files.
 - `server/models/authSession.js`, `server/models/authAttempt.js` and `server/middleware/proxyIdentity.js` (new)
 - `server/routes/authRoutes.js` (new)
 - `server/security.test.js` and `server/atlas.test.js` (new)
-- `vercel.js`, `render.yaml`, `tests/hosting.test.js` and `scripts/check-secrets.cjs` (new)
+- `vercel.mjs`, `render.yaml`, `tests/hosting.test.js` and `scripts/check-secrets.cjs` (new)
 - `vite.config.js` for the local same-origin API proxy and production API guard
 - `server/package.json` and `server/package-lock.json`
 - `src/utils/auth.js`
@@ -141,12 +141,22 @@ Checks were run against the current combined working tree on 2026-11-17.
 | Environment ignore rules and staged paths | Actual environment files ignored, staged environment change is deletion only |
 | README integration | Latest upstream showcase content incorporated, with release documentation links |
 | `npm.cmd test` at repository root | 5 scanner and hosting tests passed |
-| Live Atlas test | API health passed, Atlas authentication blocked by TLS negotiation failure |
+| Live Atlas verification | 27 checks passed, with dedicated-account cleanup |
 
 The security snapshot passed lint, hosting tests, frontend build and all 13 backend
 security tests. The UI snapshot passed lint, hosting tests and frontend build.
 The scanner changeset passed 5 root tests, lint and frontend build. Local browser
 checks covered authentication, protected pages, refresh, scanner history and mobile
-layout. Atlas and public HTTPS authentication remain blocked as documented in
-RELEASE.md. The private JWT secret was rotated locally. Atlas database-password
-rotation still requires authenticated account access.
+layout. The completed live Atlas verification passed 27 checks and confirmed dedicated-account
+cleanup. The historical Atlas credential is rejected, and historical JWT signatures
+fail verification against the current secret. Public HTTPS authentication remains
+pending approved hosting setup. See RELEASE.md for current account-access gates.
+
+## Final hosting preparation
+
+Render health checking now uses `/api/health`, with readiness verified separately.
+Both backend entry points bind to `0.0.0.0` and the provider-assigned port. Production
+startup has isolated regression coverage and a successful Atlas-backed smoke check.
+The Vercel configuration uses `vercel.mjs` to avoid Windows CLI command shadowing.
+The focused verification now passes 17 backend tests and 7 root tests. Existing
+release commits and all branding/scanner changes are preserved.
